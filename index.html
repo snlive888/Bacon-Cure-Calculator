@@ -1,96 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0f1115">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
-<title>Mark Likes BBQ Bacon Calculator</title>
-<style>
-:root{
---bg:#0f1115;--card:#1a1d24;--card2:#222632;
---accent:#ff7a00;--text:#f4f4f4;--muted:#a5aab3;
-}
-*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,sans-serif}
-.hero{padding:32px 20px;text-align:center}
-.logo{font-size:54px}
-.hero h1{margin:8px 0 0;font-size:32px}
-.hero p{color:var(--muted);margin-top:8px}
-.page{padding:16px 16px 100px;display:none}.active{display:block}
-.card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
-.card h3{margin-top:0}
-label{display:block;color:var(--muted);margin-top:8px;margin-bottom:4px}
-input,select,textarea{width:100%;padding:14px;border-radius:14px;border:1px solid #333;background:var(--card2);color:white}
-.btn{width:100%;padding:16px;border:0;border-radius:16px;background:linear-gradient(#ff8a1f,#d55f00);color:white;font-weight:700;margin-top:12px}
-.resultrow{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #333}
-.nav{position:fixed;bottom:18px;left:16px;right:16px;background:rgba(26,29,36,.92);backdrop-filter:blur(18px);border-radius:22px;display:flex;padding:8px}
-.nav button{flex:1;background:none;border:0;color:white;padding:12px;border-radius:14px}
-.nav .on{background:var(--accent)}
-.recipe{background:var(--card2);padding:12px;border-radius:14px;margin:8px 0}
-.small{color:var(--muted)}
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <meta name="theme-color" content="#0f1115">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-180.png">
+    <title>Mark Likes BBQ Bacon Calculator</title>
+    <style>
+        :root {
+            --bg: #0f1115; --card: #1a1d24; --card2: #222632;
+            --accent: #ff7a00; --text: #f4f4f4; --muted: #a5aab3; --danger: #ff4444;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; }
+        .hero { padding: 40px 20px 20px; text-align: center; }
+        .logo { font-size: 64px; filter: drop-shadow(0 0 10px var(--accent)); }
+        .hero h1 { margin: 8px 0 0; font-size: 28px; letter-spacing: -0.5px; }
+        .hero p { color: var(--muted); margin-top: 4px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .page { padding: 16px 16px 120px; display: none; max-width: 600px; margin: 0 auto; }
+        .active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--card); border-radius: 24px; padding: 20px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        h3 { margin: 0 0 16px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+        
+        label { display: block; color: var(--muted); margin-bottom: 6px; font-size: 13px; font-weight: 600; }
+        input, select { width: 100%; padding: 16px; border-radius: 16px; border: 1px solid #333; background: var(--card2); color: white; font-size: 16px; margin-bottom: 12px; transition: border-color 0.2s; }
+        input:focus { border-color: var(--accent); outline: none; }
+
+        .result-main { text-align: center; padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 10px; }
+        .result-val { font-size: 48px; font-weight: 800; color: var(--accent); display: block; }
+        .resultrow { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #333; }
+        .resultrow:last-child { border: 0; }
+        .resultrow b { color: var(--accent); font-size: 1.1rem; }
+
+        .nav { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 400px; background: rgba(26,29,36,0.95); backdrop-filter: blur(20px); border-radius: 28px; display: flex; padding: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+        .nav button { flex: 1; background: none; border: 0; color: var(--muted); padding: 14px; border-radius: 22px; font-size: 20px; transition: 0.2s; }
+        .nav .on { background: var(--accent); color: white; }
+        
+        .warning { color: var(--danger); font-size: 12px; margin-top: -8px; margin-bottom: 10px; display: none; }
+    </style>
 </head>
 <body>
+
 <div class="hero">
-<div class="logo">🔥</div>
-<h1>Mark Likes BBQ</h1>
-<p>Bacon Calculator</p>
+    <div class="logo">🔥</div>
+    <h1>Mark Likes BBQ</h1>
+    <p>Bacon Calculator</p>
 </div>
 
 <section id="calc" class="page active">
-<div class="card">
-<h3>🥓 Pork Belly Weight</h3>
-<label>Pounds</label><input id="lbs" type="number" value="5">
-<label>Ounces</label><input id="oz" type="number" value="0">
-</div>
-<div class="card">
-<h3>🧂 Cure Settings</h3>
-<label>Cure Percentage (% of meat weight)</label><input id="pct" type="number" value="3" step="0.1">
-<label>Recipe Profile</label><select id="profile"></select>
-<button class="btn" onclick="calc()">CALCULATE CURE</button>
-</div>
-<div class="card" id="results">Enter weight and calculate.</div>
+    <div class="card">
+        <h3>🥓 Pork Belly Weight</h3>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px">
+            <div>
+                <label>Pounds</label>
+                <input id="lbs" type="number" inputmode="decimal" value="5" oninput="calc()">
+            </div>
+            <div>
+                <label>Ounces</label>
+                <input id="oz" type="number" inputmode="decimal" value="0" oninput="calc()">
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>🧂 Cure Settings</h3>
+        <label>Cure Intensity (%)</label>
+        <input id="pct" type="number" inputmode="decimal" value="3" step="0.1" oninput="calc()">
+        <div id="safety-warn" class="warning">⚠️ High salt levels detected. Standard is 2.5-3%.</div>
+        
+        <label>Recipe Profile</label>
+        <select id="profile" onchange="calc()"></select>
+    </div>
+
+    <div class="card" id="results">
+        </div>
 </section>
 
 <section id="recipes" class="page">
-<div class="card"><h3>📖 Saved Recipes</h3><div id="recipeList"></div></div>
+    <div class="card"><h3>📖 Saved Recipes</h3><div id="recipeList"></div></div>
 </section>
 
 <section id="settings" class="page">
-<div class="card"><h3>⚙ Settings</h3><button class="btn" onclick="localStorage.clear();location.reload()">Reset All Data</button></div>
+    <div class="card">
+        <h3>⚙ Settings</h3>
+        <p class="small">Clearing data will reset your custom recipes to defaults.</p>
+        <button class="btn" style="background: #333; width:100%; color:white; padding:16px; border-radius:12px; border:0;" onclick="if(confirm('Reset all data?')) {localStorage.clear();location.reload();}">Reset All Data</button>
+    </div>
 </section>
 
 <div class="nav">
-<button class="tab on" data-p="calc">🏠</button>
-<button class="tab" data-p="recipes">📖</button>
-<button class="tab" data-p="settings">⚙</button>
+    <button class="tab on" data-p="calc">🏠</button>
+    <button class="tab" data-p="recipes">📖</button>
+    <button class="tab" data-p="settings">⚙</button>
 </div>
 
 <script>
-const d={name:"Original Bacon Cure",notes:"Classic all-purpose bacon cure.",Salt:400,Sugar:200,"Pink Salt":60,Garlic:15,"Black Pepper":15,Sage:5,"Pepper Flakes":5};
-if(!localStorage.recipes){localStorage.recipes=JSON.stringify([d]);}
-function rs(){return JSON.parse(localStorage.recipes)}
-function refresh(){
-profile.innerHTML=rs().map((r,i)=>`<option value="${i}">${r.name}</option>`).join("");
-recipeList.innerHTML=rs().map(r=>`<div class="recipe"><b>${r.name}</b><div class="small">${r.notes||""}</div></div>`).join("");
+const defaultRecipe = {
+    name: "Original Bacon Cure",
+    notes: "Classic all-purpose bacon cure.",
+    Salt: 400, Sugar: 200, "Pink Salt": 60, Garlic: 15, "Black Pepper": 15, Sage: 5, "Pepper Flakes": 5
+};
+
+if (!localStorage.recipes) localStorage.recipes = JSON.stringify([defaultRecipe]);
+
+function getRecipes() { return JSON.parse(localStorage.recipes); }
+
+function refreshUI() {
+    const recipes = getRecipes();
+    profile.innerHTML = recipes.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
+    recipeList.innerHTML = recipes.map(r => `
+        <div style="background:var(--card2); padding:12px; border-radius:14px; margin-bottom:8px;">
+            <b>${r.name}</b><br><span style="color:var(--muted); font-size:12px">${r.notes}</span>
+        </div>`).join("");
 }
-function calc(){
-let g=(+lbs.value||0)*453.592+(+oz.value||0)*28.3495;
-let mix=g*((+pct.value||3)/100);
-let r=rs()[profile.value||0];
-let total=r.Salt+r.Sugar+r["Pink Salt"]+r.Garlic+r["Black Pepper"]+r.Sage+r["Pepper Flakes"];
-let h=`<h3>Total Cure Mix</h3><div style="font-size:34px;font-weight:700">${mix.toFixed(2)} g</div>`;
-["Salt","Sugar","Pink Salt","Garlic","Black Pepper","Sage","Pepper Flakes"].forEach(k=>{
-h+=`<div class='resultrow'><span>${k}</span><span>${(mix*r[k]/total).toFixed(2)} g</span></div>`;
-});
-results.innerHTML=h;
+
+function calc() {
+    // Math logic
+    const totalGrams = (parseFloat(lbs.value) || 0) * 453.592 + (parseFloat(oz.value) || 0) * 28.3495;
+    const curePercentage = parseFloat(pct.value) || 0;
+    
+    // Safety check
+    document.getElementById('safety-warn').style.display = curePercentage > 4 ? 'block' : 'none';
+
+    const totalCureWeight = totalGrams * (curePercentage / 100);
+    const r = getRecipes()[profile.value || 0];
+    
+    // Ratio calculation
+    const recipeTotalParts = Object.keys(r).reduce((sum, key) => {
+        return (typeof r[key] === 'number') ? sum + r[key] : sum;
+    }, 0);
+
+    let html = `
+        <div class="result-main">
+            <label>Total Cure Mix Needed</label>
+            <span class="result-val">${totalCureWeight.toFixed(1)}g</span>
+        </div>`;
+
+    ["Salt", "Sugar", "Pink Salt", "Garlic", "Black Pepper", "Sage", "Pepper Flakes"].forEach(k => {
+        const componentWeight = (totalCureWeight * (r[k] / recipeTotalParts)).toFixed(2);
+        html += `<div class="resultrow"><span>${k}</span><b>${componentWeight} g</b></div>`;
+    });
+
+    results.innerHTML = html;
 }
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
-document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
-document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
-b.classList.add("on");document.getElementById(b.dataset.p).classList.add("active");
+
+// Tab Navigation logic
+document.querySelectorAll(".tab").forEach(b => b.onclick = () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.remove("on"));
+    document.querySelectorAll(".page").forEach(x => x.classList.remove("active"));
+    b.classList.add("on");
+    document.getElementById(b.dataset.p).classList.add("active");
 });
-refresh();
+
+// Init
+refreshUI();
+calc();
+
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
 </script>
-</body></html>
+</body>
+</html>
