@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bacon Cure Calculator Pro</title>
+<style>
+:root{
+  --bg:#121212;
+  --card:#1e1e1e;
+  --text:#f0f0f0;
+  --border:#444;
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+  max-width:700px;
+  margin:auto;
+  padding:16px;
+}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:15px;
+  margin-bottom:15px;
+}
+input{
+  width:100%;
+  padding:10px;
+  margin:4px 0 10px;
+  box-sizing:border-box;
+  background:#2a2a2a;
+  color:white;
+  border:1px solid #555;
+}
+button{
+  width:100%;
+  padding:12px;
+  font-size:16px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+td,th{
+  padding:8px;
+  border-bottom:1px solid #333;
+}
+</style>
+</head>
+<body>
+
+<h1>Bacon Cure Calculator Pro</h1>
+
+<div class="card">
+<h3>Meat Weight</h3>
+<label>Pounds</label>
+<input id="lb" type="number" step="0.01">
+
+<label>Ounces</label>
+<input id="oz" type="number" step="0.01">
+
+<label>OR Grams</label>
+<input id="grams" type="number" step="0.1">
+
+<label>Cure Percentage</label>
+<input id="curePct" type="number" step="0.1" value="3">
+</div>
+
+<div class="card">
+<h3>Master Recipe (grams)</h3>
+
+<label>Salt</label><input id="salt" value="400">
+<label>Sugar</label><input id="sugar" value="200">
+<label>Pink Salt</label><input id="pink" value="60">
+<label>Garlic</label><input id="garlic" value="15">
+<label>Black Pepper</label><input id="pepper" value="15">
+<label>Sage</label><input id="sage" value="5">
+<label>Pepper Flakes</label><input id="flakes" value="5">
+
+</div>
+
+<button onclick="calculate()">Calculate</button>
+
+<div id="results" class="card">
+Enter values and press Calculate.
+</div>
+
+<script>
+function calculate(){
+
+ let grams=parseFloat(document.getElementById('grams').value);
+
+ if(!grams || grams<=0){
+   let lb=parseFloat(document.getElementById('lb').value)||0;
+   let oz=parseFloat(document.getElementById('oz').value)||0;
+   grams=(lb*453.59237)+(oz*28.349523125);
+ }
+
+ if(!grams || grams<=0){
+   document.getElementById('results').innerHTML="Enter a valid meat weight.";
+   return;
+ }
+
+ const curePct=parseFloat(document.getElementById('curePct').value)||3;
+
+ const recipe={
+   "Salt":parseFloat(document.getElementById('salt').value)||0,
+   "Sugar":parseFloat(document.getElementById('sugar').value)||0,
+   "Pink Salt":parseFloat(document.getElementById('pink').value)||0,
+   "Garlic":parseFloat(document.getElementById('garlic').value)||0,
+   "Black Pepper":parseFloat(document.getElementById('pepper').value)||0,
+   "Sage":parseFloat(document.getElementById('sage').value)||0,
+   "Pepper Flakes":parseFloat(document.getElementById('flakes').value)||0
+ };
+
+ let recipeTotal=0;
+ Object.values(recipe).forEach(v=>recipeTotal+=v);
+
+ const cureNeeded=grams*(curePct/100);
+
+ let html=`
+ <h3>Results</h3>
+ <p><b>Meat Weight:</b> ${grams.toFixed(1)} g</p>
+ <p><b>Total Cure Mix:</b> ${cureNeeded.toFixed(2)} g (${curePct}%)</p>
+ <table>
+ <tr><th>Ingredient</th><th>Amount</th></tr>
+ `;
+
+ for(const [name,val] of Object.entries(recipe)){
+   let amt=cureNeeded*(val/recipeTotal);
+   html+=`<tr><td>${name}</td><td>${amt.toFixed(2)} g</td></tr>`;
+ }
+
+ html+="</table>";
+ document.getElementById('results').innerHTML=html;
+}
+</script>
+
+</body>
+</html>
