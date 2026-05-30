@@ -22,13 +22,12 @@
         .active { display: block; animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Stepper UI */
         .stepper { display: flex; background: var(--card-inner); border-radius: 12px; border: 1px solid #2c2c2e; overflow: hidden; margin-bottom: 12px; }
         .stepper button { width: 50px; background: #2c2c2e; border: 0; color: white; font-size: 20px; font-weight: bold; cursor: pointer; }
         .stepper button:active { background: var(--accent); }
         .stepper input { flex: 1; border: 0; background: none; text-align: center; padding: 14px; font-size: 18px; color: white; width: 100%; }
+        input::placeholder { color: #444; }
 
-        /* Progress Dashboard */
         .progress-container { background: var(--card); border-radius: 20px; padding: 20px; margin-top: 20px; border: 1px solid var(--accent); }
         .progress-bar { height: 12px; background: #222; border-radius: 6px; margin: 15px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.5s ease; }
@@ -42,10 +41,13 @@
         .nav button svg { width: 22px; height: 22px; fill: currentColor; }
         .nav .on { color: var(--accent); }
 
-        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
-        label { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 8px; }
-        .btn-main { width: 100%; background: var(--accent); color: black; border: 0; padding: 16px; border-radius: 12px; font-weight: 800; margin-top: 10px; }
-        .row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #1c1c1e; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid #1c1c1e; }
+        label { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .btn-main { width: 100%; background: var(--accent); color: black; border: 0; padding: 18px; border-radius: 14px; font-weight: 800; margin-top: 10px; font-size: 16px; }
+        .row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1c1c1e; }
+        .row:last-child { border:0; }
+        .row span { color: var(--muted); font-size: 15px; }
+        .row b { color: #fff; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -57,28 +59,32 @@
         <label>Pounds</label>
         <div class="stepper">
             <button onclick="step('lbs', -1)">−</button>
-            <input id="lbs" type="number" value="5" oninput="calc()">
+            <input id="lbs" type="number" inputmode="decimal" placeholder="0" oninput="calc()">
             <button onclick="step('lbs', 1)">+</button>
         </div>
 
         <label>Ounces</label>
         <div class="stepper">
             <button onclick="step('oz', -1)">−</button>
-            <input id="oz" type="number" value="0" oninput="calc()">
+            <input id="oz" type="number" inputmode="decimal" placeholder="0" oninput="calc()">
             <button onclick="step('oz', 1)">+</button>
         </div>
 
-        <label>Thickness (Inches)</label>
+        <label>Cure Length (Days)</label>
         <div class="stepper">
-            <button onclick="step('thick', -0.5)">−</button>
-            <input id="thick" type="number" value="1.5" step="0.5" oninput="calc()">
-            <button onclick="step('thick', 0.5)">+</button>
+            <button onclick="step('days', -1)">−</button>
+            <input id="days" type="number" value="7" oninput="calc()">
+            <button onclick="step('days', 1)">+</button>
         </div>
     </div>
 
     <div class="card">
         <label>Recipe Profile</label>
-        <select id="profile" onchange="calc()" style="width:100%; background:var(--card-inner); color:white; padding:14px; border-radius:12px; border:1px solid #2c2c2e;"></select>
+        <select id="profile" onchange="calc()" style="width:100%; background:var(--card-inner); color:white; padding:14px; border-radius:12px; border:1px solid #2c2c2e; font-size: 16px; margin-bottom: 10px;"></select>
+        
+        <label>Cure Intensity (%)</label>
+        <input id="pct" type="number" value="3.0" step="0.1" oninput="calc()" style="width:100%; background:var(--card-inner); color:white; padding:14px; border-radius:12px; border:1px solid #2c2c2e; font-size: 16px;">
+        
         <button class="btn-main" onclick="startCure()">START ACTIVE CURE</button>
     </div>
 
@@ -88,7 +94,7 @@
 <section id="dashboard" class="page">
     <header><h1 style="text-align:center">Active Cure</h1></header>
     <div id="active-cure-content">
-        <p style="text-align:center; color:var(--muted)">No active cure found. Start one in the calculator!</p>
+        <p style="text-align:center; color:var(--muted); margin-top: 40px;">No active cure found.<br>Calculate and start one!</p>
     </div>
 </section>
 
@@ -105,7 +111,7 @@
 
 <script>
 const keys = ["Salt", "Sugar", "Pink Salt", "Garlic", "Black Pepper", "Sage", "Pepper Flakes"];
-const defaultRecipe = { name: "Chuds BBQ Bacon Cure", notes: "Classic cure from Chud's BBQ.", Salt: 400, Sugar: 200, "Pink Salt": 60, Garlic: 15, "Black Pepper": 15, Sage: 5, "Pepper Flakes": 5 };
+const defaultRecipe = { name: "Chuds BBQ Bacon Cure", notes: "Classic all-purpose cure.", Salt: 400, Sugar: 200, "Pink Salt": 60, Garlic: 15, "Black Pepper": 15, Sage: 5, "Pepper Flakes": 5 };
 
 if (!localStorage.recipes) localStorage.recipes = JSON.stringify([defaultRecipe]);
 
@@ -113,54 +119,85 @@ function haptic() { if (window.navigator.vibrate) window.navigator.vibrate(10); 
 
 function step(id, val) {
     const el = document.getElementById(id);
-    el.value = (parseFloat(el.value) || 0) + val;
+    el.value = Math.max(0, (parseFloat(el.value) || 0) + val);
     haptic();
     calc();
 }
 
 function calc() {
     const grams = (parseFloat(lbs.value) || 0) * 453.592 + (parseFloat(oz.value) || 0) * 28.3495;
-    const mixNeeded = grams * 0.03; // Using 3% as default for calculation
+    const intensity = parseFloat(pct.value) || 0;
+    const mixNeeded = grams * (intensity / 100);
+    
     const r = JSON.parse(localStorage.recipes)[profile.value || 0];
     const totalParts = keys.reduce((s, k) => s + (r[k] || 0), 0);
 
-    let html = `<div style="background:var(--card); border-radius:20px; padding:20px; margin-top:20px; border:1px solid var(--accent); text-align:center;">
-                <label>Total Cure Mix</label><span style="font-size:32px; font-weight:900; color:var(--accent);">${mixNeeded.toFixed(2)}g</span></div>
-                <div class="card" style="margin-top:16px;">`;
+    if (grams === 0) {
+        document.getElementById('results-area').innerHTML = "";
+        return;
+    }
+
+    let html = `<div style="background:var(--card); border-radius:20px; padding:24px; margin-top:20px; border:1px solid var(--accent); text-align:center;">
+                <label style="color:var(--accent)">Total Cure Mix Needed</label>
+                <span style="font-size:42px; font-weight:900; color:var(--accent); display:block">${mixNeeded.toFixed(2)}g</span></div>
+                <div class="card" style="margin-top:16px; padding: 10px 20px;">`;
+    
     keys.forEach(k => {
-        html += `<div class="row"><span>${k}</span><b>${(mixNeeded * (r[k] / totalParts)).toFixed(2)} g</b></div>`;
+        const componentWeight = (mixNeeded * (r[k] / totalParts)).toFixed(2);
+        html += `<div class="row"><span>${k}</span><b>${componentWeight} g</b></div>`;
     });
+    
     document.getElementById('results-area').innerHTML = html + "</div>";
 }
 
 function startCure() {
-    const thickness = parseFloat(thick.value) || 1.5;
-    const daysNeeded = Math.ceil((thickness / 0.5) + 2);
-    const cureData = { start: Date.now(), days: daysNeeded, name: JSON.parse(localStorage.recipes)[profile.value].name };
-    localStorage.activeCure = JSON.stringify(cureData);
-    alert(`Cure Started! Estimated time: ${daysNeeded} days.`);
+    const cureDays = parseInt(days.value) || 7;
+    const rName = JSON.parse(localStorage.recipes)[profile.value].name;
+    localStorage.activeCure = JSON.stringify({ start: Date.now(), days: cureDays, name: rName });
+    haptic();
+    alert("Cure tracking started!");
     updateDashboard();
 }
 
 function updateDashboard() {
     if (!localStorage.activeCure) return;
     const data = JSON.parse(localStorage.activeCure);
-    const elapsed = (Date.now() - data.start) / (1000 * 60 * 60 * 24);
-    const pct = Math.min(100, Math.max(0, (elapsed / data.days) * 100)).toFixed(1);
-    
-    const end = new Date(data.start + (data.days * 24 * 60 * 60 * 1000)).toLocaleDateString();
+    const elapsedDays = (Date.now() - data.start) / (1000 * 60 * 60 * 24);
+    const pct = Math.min(100, Math.max(0, (elapsedDays / data.days) * 100)).toFixed(1);
+    const finishDate = new Date(data.start + (data.days * 24 * 60 * 60 * 1000));
 
     document.getElementById('active-cure-content').innerHTML = `
         <div class="progress-container">
-            <label>${data.name}</label>
-            <div style="font-size:24px; font-weight:bold; margin-bottom:5px;">${pct}% Complete</div>
+            <label style="color:var(--accent)">${data.name}</label>
+            <div style="font-size:28px; font-weight:900; margin: 10px 0;">${pct}% Done</div>
             <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-            <div style="display:flex; justify-content:space-between; color:var(--muted); font-size:12px;">
-                <span>Started: ${new Date(data.start).toLocaleDateString()}</span>
-                <span>Finish: ${end}</span>
+            <div style="display:flex; justify-content:space-between; color:var(--muted); font-size:12px; font-weight:600;">
+                <span>START: ${new Date(data.start).toLocaleDateString()}</span>
+                <span>FINISH: ${finishDate.toLocaleDateString()}</span>
             </div>
-            <button class="btn-main" style="background:#333; color:white; margin-top:20px;" onclick="localStorage.removeItem('activeCure'); updateDashboard();">CLEAR CURE</button>
+            <button class="btn-main" style="background:#222; color:white; margin-top:30px;" onclick="if(confirm('Stop tracking this cure?')){localStorage.removeItem('activeCure'); updateDashboard();}">CLEAR CURE</button>
         </div>`;
+}
+
+function refreshRecipeTab() {
+    const rs = JSON.parse(localStorage.recipes);
+    profile.innerHTML = rs.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
+    
+    recipeList.innerHTML = rs.map(r => {
+        const totalParts = keys.reduce((s, k) => s + (r[k] || 0), 0);
+        const ingredients = keys.map(k => {
+            const p = ((r[k] / totalParts) * 100).toFixed(1);
+            return `<div class="row"><span>${k}</span><b style="color:var(--accent)">${p}%</b></div>`;
+        }).join("");
+
+        return `<div class="card">
+            <div style="border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
+                <h2 style="margin:0; font-size:20px;">${r.name}</h2>
+                <p style="color:var(--muted); font-size:13px; margin:5px 0 0;">${r.notes}</p>
+            </div>
+            ${ingredients}
+        </div>`;
+    }).join("");
 }
 
 document.querySelectorAll(".tab").forEach(btn => {
@@ -171,12 +208,12 @@ document.querySelectorAll(".tab").forEach(btn => {
         btn.classList.add("on");
         document.getElementById(btn.dataset.p).classList.add("active");
         if (btn.dataset.p === 'dashboard') updateDashboard();
+        if (btn.dataset.p === 'recipes') refreshRecipeTab();
     };
 });
 
-// Setup
-const rs = JSON.parse(localStorage.recipes);
-profile.innerHTML = rs.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
+// Initialization
+refreshRecipeTab();
 calc();
 updateDashboard();
 </script>
