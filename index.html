@@ -1,12 +1,125 @@
-<!DOCTYPE html><html><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mark Likes BBQ Bacon Calculator</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#121212">
+<title>Mark Likes BBQ Bacon Calculator</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-</head><body>
-<h1>Mark Likes BBQ Bacon Calculator</h1>
-<label for="pct">Cure Percentage (% of meat weight)</label>
-<input id="pct" type="number" value="3" step="0.1">
-<p>Updated PWA assets and labels.</p>
+<style>
+body{margin:0;background:#121212;color:#eee;font-family:system-ui}
+header{background:#1b1b1b;padding:14px;text-align:center}
+.page{display:none;padding:16px;padding-bottom:80px}.active{display:block}
+.card{background:#1f1f1f;border-radius:12px;padding:14px;margin-bottom:12px}
+input,select,textarea{width:100%;box-sizing:border-box;padding:12px;margin:6px 0;background:#2b2b2b;color:#fff;border:1px solid #555;border-radius:8px}
+button{padding:12px;border:0;border-radius:8px}
+.primary{width:100%;background:#d06a2b;color:#fff;font-weight:bold}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#1b1b1b}
+nav button{flex:1;background:#1b1b1b;color:#fff}
+nav .on{background:#d06a2b}
+.recipeItem{padding:10px;border-bottom:1px solid #444}
+.small{color:#bbb}
+table{width:100%}td{padding:4px}
+</style>
+</head>
+<body>
+<header><h2>🔥 Mark Likes BBQ</h2><div>Bacon Calculator</div></header>
+
+<section id="calc" class="page active">
+<div class="card">
+<label>Pounds</label><input id="lbs" type="number" value="5">
+<label>Ounces</label><input id="oz" type="number" value="0">
+<label>Cure Percentage (% of meat weight)</label><input id="pct" type="number" value="3" step="0.1">
+<label>Recipe Profile</label><select id="profile"></select>
+<button class="primary" onclick="calc()">Calculate</button>
+</div>
+<div class="card" id="results">Enter weight and calculate.</div>
+</section>
+
+<section id="recipes" class="page">
+<div class="card">
+<h3>Saved Recipes</h3>
+<div id="recipeList"></div>
+</div>
+<div class="card">
+<h3>Create Recipe</h3>
+<input id="rname" placeholder="Recipe Name">
+<textarea id="notes" placeholder="Recipe Notes"></textarea>
+<input id="salt" value="400" placeholder="Salt">
+<input id="sugar" value="200" placeholder="Sugar">
+<input id="pink" value="60" placeholder="Pink Salt">
+<input id="garlic" value="15" placeholder="Garlic">
+<input id="pepper" value="15" placeholder="Black Pepper">
+<input id="sage" value="5" placeholder="Sage">
+<input id="flakes" value="5" placeholder="Pepper Flakes">
+<button class="primary" onclick="saveRecipe()">Save Recipe</button>
+</div>
+</section>
+
+<section id="settings" class="page">
+<div class="card">
+<button class="primary" onclick="resetAll()">Reset All Data</button>
+</div>
+</section>
+
+<nav>
+<button class="tab on" data-p="calc">🏠</button>
+<button class="tab" data-p="recipes">📖</button>
+<button class="tab" data-p="settings">⚙</button>
+</nav>
+
+<script>
+const defaultRecipe={name:"Original Bacon Cure",notes:"Classic all-purpose bacon cure.",Salt:400,Sugar:200,"Pink Salt":60,Garlic:15,"Black Pepper":15,Sage:5,"Pepper Flakes":5};
+if(!localStorage.recipes){localStorage.recipes=JSON.stringify([defaultRecipe]);}
+
+function recipes(){return JSON.parse(localStorage.recipes);}
+
+function refresh(){
+profile.innerHTML=recipes().map((r,i)=>`<option value="${i}">${r.name}</option>`).join("");
+recipeList.innerHTML=recipes().map(r=>`<div class="recipeItem"><b>${r.name}</b><br><span class="small">${r.notes||""}</span></div>`).join("");
+}
+
+function calc(){
+const grams=((+lbs.value||0)*453.592)+((+oz.value||0)*28.3495);
+const mix=grams*((+pct.value||3)/100);
+const r=recipes()[profile.value||0];
+const total=r.Salt+r.Sugar+r["Pink Salt"]+r.Garlic+r["Black Pepper"]+r.Sage+r["Pepper Flakes"];
+let html=`<h3>Total Cure Mix: ${mix.toFixed(2)} g</h3><table>`;
+["Salt","Sugar","Pink Salt","Garlic","Black Pepper","Sage","Pepper Flakes"].forEach(k=>{
+html+=`<tr><td>${k}</td><td>${(mix*r[k]/total).toFixed(2)} g</td></tr>`;
+});
+results.innerHTML=html+"</table><p>"+(r.notes||"")+"</p>";
+}
+
+function saveRecipe(){
+let rs=recipes();
+rs.push({
+name:rname.value||"New Recipe",
+notes:notes.value,
+Salt:+salt.value,Sugar:+sugar.value,"Pink Salt":+pink.value,
+Garlic:+garlic.value,"Black Pepper":+pepper.value,Sage:+sage.value,"Pepper Flakes":+flakes.value
+});
+localStorage.recipes=JSON.stringify(rs);
+refresh();
+alert("Recipe saved");
+}
+
+function resetAll(){
+if(confirm("Reset all data?")){
+localStorage.clear();
+location.reload();
+}
+}
+
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+b.classList.add("on");
+document.getElementById(b.dataset.p).classList.add("active");
+});
+
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js");}
+refresh();
+</script>
 </body></html>
