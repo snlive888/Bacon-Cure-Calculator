@@ -1,143 +1,112 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bacon Cure Calculator Pro</title>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.json">
+<title>Mark Likes BBQ Bacon Calculator</title>
 <style>
-:root{
-  --bg:#121212;
-  --card:#1e1e1e;
-  --text:#f0f0f0;
-  --border:#444;
-}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,sans-serif;
-  max-width:700px;
-  margin:auto;
-  padding:16px;
-}
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:15px;
-  margin-bottom:15px;
-}
-input{
-  width:100%;
-  padding:10px;
-  margin:4px 0 10px;
-  box-sizing:border-box;
-  background:#2a2a2a;
-  color:white;
-  border:1px solid #555;
-}
-button{
-  width:100%;
-  padding:12px;
-  font-size:16px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-td,th{
-  padding:8px;
-  border-bottom:1px solid #333;
-}
-</style>
-</head>
-<body>
+body{margin:0;font-family:system-ui;background:#111;color:#eee}
+header{background:#1a1a1a;padding:14px;text-align:center;position:sticky;top:0}
+nav{display:flex;background:#222}
+nav button{flex:1;padding:12px;border:0;background:#222;color:#fff}
+nav button.active{background:#c65a1e}
+.page{display:none;padding:12px}.page.active{display:block}
+.card{background:#1e1e1e;border-radius:10px;padding:12px;margin:10px 0}
+input,select{width:100%;padding:10px;margin:4px 0;background:#2c2c2c;color:#fff;border:1px solid #555;border-radius:6px}
+button.action{width:100%;padding:12px;background:#c65a1e;color:#fff;border:0;border-radius:6px}
+table{width:100%} td{padding:4px}
+.small{font-size:.9em;color:#bbb}
+</style></head><body>
+<header><h2>Mark Likes BBQ Bacon Calculator</h2></header>
+<nav>
+<button class="tab active" data-page="calc">Calculator</button>
+<button class="tab" data-page="recipes">Recipes</button>
+<button class="tab" data-page="schedule">Schedule</button>
+<button class="tab" data-page="history">History</button>
+</nav>
 
-<h1>Bacon Cure Calculator Pro</h1>
-
+<section id="calc" class="page active">
 <div class="card">
-<h3>Meat Weight</h3>
-<label>Pounds</label>
-<input id="lb" type="number" step="0.01">
-
-<label>Ounces</label>
-<input id="oz" type="number" step="0.01">
-
-<label>OR Grams</label>
-<input id="grams" type="number" step="0.1">
-
-<label>Cure Percentage</label>
-<input id="curePct" type="number" step="0.1" value="3">
+<h3>Weight</h3>
+<select id="unit"><option>grams</option><option>lb/oz</option></select>
+<input id="grams" placeholder="grams">
+<input id="lbs" placeholder="pounds">
+<input id="oz" placeholder="ounces">
+<h3>Cure %</h3><input id="pct" value="3">
+<button class="action" onclick="calc()">Calculate</button>
 </div>
+<div class="card" id="results">Results appear here.</div>
+</section>
 
+<section id="recipes" class="page">
 <div class="card">
-<h3>Master Recipe (grams)</h3>
-
-<label>Salt</label><input id="salt" value="400">
-<label>Sugar</label><input id="sugar" value="200">
-<label>Pink Salt</label><input id="pink" value="60">
-<label>Garlic</label><input id="garlic" value="15">
-<label>Black Pepper</label><input id="pepper" value="15">
-<label>Sage</label><input id="sage" value="5">
-<label>Pepper Flakes</label><input id="flakes" value="5">
-
+<h3>Master Recipe</h3>
+<input id="salt" value="400"><input id="sugar" value="200"><input id="pink" value="60">
+<input id="garlic" value="15"><input id="pepper" value="15"><input id="sage" value="5"><input id="flakes" value="5">
+<button class="action" onclick="saveRecipe()">Save Recipe</button>
 </div>
+</section>
 
-<button onclick="calculate()">Calculate</button>
-
-<div id="results" class="card">
-Enter values and press Calculate.
+<section id="schedule" class="page">
+<div class="card">
+<h3>Cure Schedule</h3>
+<input type="date" id="start">
+<select id="days"><option>5</option><option selected>7</option><option>10</option><option>14</option></select>
+<button class="action" onclick="schedule()">Calculate Dates</button>
+<div id="sched"></div>
 </div>
+</section>
+
+<section id="history" class="page">
+<div class="card"><h3>Batch History</h3><div id="historyList">No batches saved.</div></div>
+</section>
 
 <script>
-function calculate(){
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}
 
- let grams=parseFloat(document.getElementById('grams').value);
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+b.classList.add('active'); document.getElementById(b.dataset.page).classList.add('active');
+});
 
- if(!grams || grams<=0){
-   let lb=parseFloat(document.getElementById('lb').value)||0;
-   let oz=parseFloat(document.getElementById('oz').value)||0;
-   grams=(lb*453.59237)+(oz*28.349523125);
- }
+function recipe(){
+return {
+Salt:+salt.value,Sugar:+sugar.value,"Pink Salt":+pink.value,
+Garlic:+garlic.value,"Black Pepper":+pepper.value,Sage:+sage.value,"Pepper Flakes":+flakes.value
+};}
 
- if(!grams || grams<=0){
-   document.getElementById('results').innerHTML="Enter a valid meat weight.";
-   return;
- }
+function saveRecipe(){localStorage.recipe=JSON.stringify(recipe()); alert("Recipe saved");}
 
- const curePct=parseFloat(document.getElementById('curePct').value)||3;
-
- const recipe={
-   "Salt":parseFloat(document.getElementById('salt').value)||0,
-   "Sugar":parseFloat(document.getElementById('sugar').value)||0,
-   "Pink Salt":parseFloat(document.getElementById('pink').value)||0,
-   "Garlic":parseFloat(document.getElementById('garlic').value)||0,
-   "Black Pepper":parseFloat(document.getElementById('pepper').value)||0,
-   "Sage":parseFloat(document.getElementById('sage').value)||0,
-   "Pepper Flakes":parseFloat(document.getElementById('flakes').value)||0
- };
-
- let recipeTotal=0;
- Object.values(recipe).forEach(v=>recipeTotal+=v);
-
- const cureNeeded=grams*(curePct/100);
-
- let html=`
- <h3>Results</h3>
- <p><b>Meat Weight:</b> ${grams.toFixed(1)} g</p>
- <p><b>Total Cure Mix:</b> ${cureNeeded.toFixed(2)} g (${curePct}%)</p>
- <table>
- <tr><th>Ingredient</th><th>Amount</th></tr>
- `;
-
- for(const [name,val] of Object.entries(recipe)){
-   let amt=cureNeeded*(val/recipeTotal);
-   html+=`<tr><td>${name}</td><td>${amt.toFixed(2)} g</td></tr>`;
- }
-
- html+="</table>";
- document.getElementById('results').innerHTML=html;
+function loadRecipe(){
+let r=JSON.parse(localStorage.recipe||'null'); if(!r)return;
+salt.value=r.Salt;sugar.value=r.Sugar;pink.value=r["Pink Salt"];garlic.value=r.Garlic;pepper.value=r["Black Pepper"];sage.value=r.Sage;flakes.value=r["Pepper Flakes"];
 }
-</script>
 
-</body>
-</html>
+function calc(){
+let g=+grams.value||0;
+if(unit.value==='lb/oz'){g=(+lbs.value||0)*453.592+(+oz.value||0)*28.3495;}
+let mix=g*(+pct.value/100);
+let r=recipe(); let total=Object.values(r).reduce((a,b)=>a+b,0);
+let h=`<h3>Total Cure Mix ${mix.toFixed(2)} g</h3><table>`;
+for(let k in r){h+=`<tr><td>${k}</td><td>${(mix*r[k]/total).toFixed(2)} g</td></tr>`;}
+results.innerHTML=h+'</table>';
+let hist=JSON.parse(localStorage.history||'[]');
+hist.unshift({date:new Date().toLocaleString(),weight:g,mix:mix.toFixed(2)});
+localStorage.history=JSON.stringify(hist.slice(0,50));
+renderHistory();
+}
+
+function schedule(){
+let d=new Date(start.value); if(isNaN(d)) return;
+let daysN=+days.value; let ready=new Date(d); ready.setDate(ready.getDate()+daysN);
+sched.innerHTML=`<p>Start: ${d.toDateString()}</p><p>Ready: ${ready.toDateString()}</p>`;
+}
+
+function renderHistory(){
+let hist=JSON.parse(localStorage.history||'[]');
+historyList.innerHTML=hist.length?hist.map(x=>`<div class=small>${x.date} - ${x.weight.toFixed?x.weight.toFixed(0):x.weight}g - mix ${x.mix}g</div>`).join(''):'No batches saved.';
+}
+loadRecipe(); renderHistory();
+</script></body></html>
