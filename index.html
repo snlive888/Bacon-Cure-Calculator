@@ -214,6 +214,7 @@ function updateDashboard() {
     const end = new Date(data.start + (data.days * 86400000));
     const elapsed = (Date.now() - data.start) / 86400000;
     const pct = Math.min(100, (elapsed / data.days) * 100).toFixed(1);
+
     document.getElementById('active-cure-content').innerHTML = `
         <div class="card" style="border-color:var(--accent)">
             <label>${data.name}</label>
@@ -224,10 +225,16 @@ function updateDashboard() {
             <div style="height:10px; background:#222; border-radius:5px; margin-bottom:15px; overflow:hidden;">
                 <div style="height:100%; background:var(--accent); width:${pct}%"></div>
             </div>
-            <button class="btn-main" style="background:#222; color:white;" onclick="localStorage.removeItem('activeCure'); updateDashboard();">CLEAR</button>
+            <button class="btn-main" style="background:#222; color:white;" onclick="confirmClear()">CLEAR</button>
         </div>`;
 }
 
+function confirmClear() {
+    if (confirm("Are you sure you want to stop tracking this cure?")) {
+        localStorage.removeItem('activeCure');
+        updateDashboard();
+    }
+}
 function refresh() {
     const rs = JSON.parse(localStorage.recipes);
     profile.innerHTML = rs.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
