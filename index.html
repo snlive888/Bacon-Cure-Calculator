@@ -40,9 +40,10 @@
         .nav .on { color: var(--accent); }
         .nav svg { width: 22px; height: 22px; fill: currentColor; }
 
-        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid #1c1c1e; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid #1c1c1e; position: relative; }
         label { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 8px; }
         .btn-main { width: 100%; background: var(--accent); color: black; border: 0; padding: 18px; border-radius: 14px; font-weight: 800; font-size: 16px; cursor: pointer; }
+        .btn-copy { position: absolute; top: 15px; right: 15px; background: #2c2c2e; color: var(--accent); border: 0; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
         
         .row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1c1c1e; }
         .row:last-child { border:0; }
@@ -53,7 +54,7 @@
 <body>
 
 <section id="calc" class="page active">
-    <header><h1 style="text-align:center">Bacon Cure Calculator</h1></header>
+    <header><h1 style="text-align:center">Bacon Cure Calulator</h1></header>
     <div class="card">
         <label>Pounds / Ounces</label>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -83,21 +84,16 @@
 
 <section id="recipes" class="page">
     <header><h1 style="text-align:center">Recipes</h1></header>
-    <button class="btn-main" style="margin-bottom:20px;" onclick="document.getElementById('modal').style.display='block'">+ ADD NEW RECIPE</button>
+    <button class="btn-main" style="margin-bottom:20px;" onclick="openAddModal()">+ ADD NEW RECIPE</button>
     <div id="recipeList"></div>
 </section>
 
 <div id="modal">
-    <h2>New Recipe</h2>
+    <h2 id="modal-title">New Recipe</h2>
     <input id="new-name" placeholder="Recipe Name">
     <textarea id="new-notes" placeholder="Notes (Optional)"></textarea>
-    <div id="new-ings">
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <input placeholder="Ingredient" class="ing-n">
-            <input type="number" placeholder="Value" class="ing-v" style="width:100px;">
-        </div>
-    </div>
-    <button onclick="addIngRow()" style="background:#222; color:white; border:0; padding:10px; border-radius:8px;">+ Add Ingredient</button>
+    <div id="new-ings"></div>
+    <button onclick="addIngRow()" style="background:#222; color:white; border:0; padding:10px; border-radius:8px; width:100%; margin-top:10px;">+ Add Ingredient</button>
     <div style="margin-top:30px; display:flex; gap:10px;">
         <button class="btn-main" style="background:#333; color:white;" onclick="document.getElementById('modal').style.display='none'">CANCEL</button>
         <button class="btn-main" onclick="saveRecipe()">SAVE</button>
@@ -134,7 +130,6 @@ function calc() {
     const mix = g * ((parseFloat(pct.value) || 0) / 100);
     const rs = JSON.parse(localStorage.recipes);
     const r = rs[profile.value || 0];
-    
     const ings = r.ingredients;
     const totalParts = Object.values(ings).reduce((a, b) => a + b, 0);
 
@@ -142,15 +137,37 @@ function calc() {
                 <label style="color:var(--accent)">Total Cure Mix</label>
                 <span style="font-size:36px; font-weight:900; color:var(--accent);">${mix.toFixed(2)} g</span>
              </div><div class="card">`;
-    
     Object.keys(ings).forEach(k => {
         h += `<div class="row"><span>${k}</span><b>${(mix * (ings[k] / totalParts)).toFixed(2)} g</b></div>`;
     });
-
-    // Start Cure button moved inside/under the ingredient card
     h += `<button class="btn-main" style="margin-top:20px;" onclick="startCure()">START ACTIVE CURE</button></div>`;
-    
     document.getElementById('results-area').innerHTML = h;
+}
+
+function openAddModal() {
+    document.getElementById('modal-title').innerText = "New Recipe";
+    document.getElementById('new-name').value = "";
+    document.getElementById('new-notes').value = "";
+    document.getElementById('new-ings').innerHTML = "";
+    addIngRow();
+    document.getElementById('modal').style.display='block';
+}
+
+function copyRecipe(index) {
+    const r = JSON.parse(localStorage.recipes)[index];
+    document.getElementById('modal-title').innerText = "Copy of " + r.name;
+    document.getElementById('new-name').value = r.name + " (Copy)";
+    document.getElementById('new-notes').value = r.notes || "";
+    document.getElementById('new-ings').innerHTML = "";
+    Object.keys(r.ingredients).forEach(k => addIngRow(k, r.ingredients[k]));
+    document.getElementById('modal').style.display='block';
+}
+
+function addIngRow(name = "", val = "") {
+    const d = document.createElement('div');
+    d.style.display = 'flex'; d.style.gap = '10px'; d.style.marginBottom = '10px';
+    d.innerHTML = `<input placeholder="Ingredient" class="ing-n" value="${name}"><input type="number" placeholder="Value" class="ing-v" style="width:100px;" value="${val}">`;
+    document.getElementById('new-ings').appendChild(d);
 }
 
 function saveRecipe() {
@@ -165,13 +182,6 @@ function saveRecipe() {
     localStorage.recipes = JSON.stringify(rs);
     document.getElementById('modal').style.display='none';
     refresh();
-}
-
-function addIngRow() {
-    const d = document.createElement('div');
-    d.style.display = 'flex'; d.style.gap = '10px'; d.style.marginBottom = '10px';
-    d.innerHTML = `<input placeholder="Ingredient" class="ing-n"><input type="number" placeholder="Value" class="ing-v" style="width:100px;">`;
-    document.getElementById('new-ings').appendChild(d);
 }
 
 function startCure() {
@@ -202,12 +212,16 @@ function updateDashboard() {
 function refresh() {
     const rs = JSON.parse(localStorage.recipes);
     profile.innerHTML = rs.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
-    recipeList.innerHTML = rs.map(r => {
+    recipeList.innerHTML = rs.map((r, i) => {
         const total = Object.values(r.ingredients).reduce((a,b)=>a+b, 0);
         const rows = Object.keys(r.ingredients).map(k => `
             <div class="row"><span>${k}</span><b style="color:var(--accent)">${((r.ingredients[k]/total)*100).toFixed(1)}%</b></div>
         `).join("");
-        return `<div class="card"><h3>${r.name}</h3>${rows}</div>`;
+        return `<div class="card">
+                    <button class="btn-copy" onclick="copyRecipe(${i})">COPY</button>
+                    <h3>${r.name}</h3>
+                    ${rows}
+                </div>`;
     }).join("");
 }
 
