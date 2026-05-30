@@ -10,6 +10,7 @@
         :root {
             --bg: #000000; --card: #121212; --card-inner: #1c1c1e;
             --accent: #ff7a00; --text: #ffffff; --muted: #8e8e93;
+            --danger: #ff453a;
             --safe-bottom: env(safe-area-inset-bottom);
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -43,14 +44,18 @@
         .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid #1c1c1e; position: relative; }
         label { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 8px; }
         .btn-main { width: 100%; background: var(--accent); color: black; border: 0; padding: 18px; border-radius: 14px; font-weight: 800; font-size: 16px; cursor: pointer; }
-        .btn-copy { position: absolute; top: 15px; right: 15px; background: #2c2c2e; color: var(--accent); border: 0; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
+        
+        .card-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 8px; }
+        .btn-sub { background: #2c2c2e; color: var(--accent); border: 0; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
+        .btn-del { color: var(--danger); }
         
         .row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1c1c1e; }
         .row:last-child { border:0; }
 
         #modal { display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:2000; padding:20px; overflow-y:auto; }
-        
-        /* Smoking Instruction Box */
+        .unit-toggle { background: #2c2c2e; border: 0; color: var(--muted); padding: 14px 10px; border-radius: 12px; margin-bottom: 10px; font-weight: 800; cursor: pointer; min-width: 45px; }
+        .unit-toggle.active-unit { color: var(--accent); background: #3a3a3c; }
+
         .instruction-card { background: #1c1c1e; border: 1px solid var(--accent); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
         .instruction-card h3 { color: var(--accent); margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
         .instruction-card p { margin: 0; font-size: 15px; line-height: 1.5; color: #fff; }
@@ -59,7 +64,7 @@
 <body>
 
 <section id="calc" class="page active">
-    <header><h1 style="text-align:center">Bacon Cure Calculator</h1></header>
+    <header><h1 style="text-align:center">Bacon Cure Recipe Calculator</h1></header>
     <div class="card">
         <label>Pounds / Ounces</label>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -89,12 +94,10 @@
 
 <section id="recipes" class="page">
     <header><h1 style="text-align:center">Recipes</h1></header>
-    
     <div class="instruction-card">
         <h3>Smoking Instructions</h3>
-        <p>After curing, smoke the cured pork belly between 200-250 degrees until the internal temperature is 150 degrees.</p>
+        <p>After curing, smoke the cured pork belly between 200°-250° until the internal temperature is 150°.</p>
     </div>
-
     <button class="btn-main" style="margin-bottom:20px;" onclick="openAddModal()">+ ADD NEW RECIPE</button>
     <div id="recipeList"></div>
 </section>
@@ -118,13 +121,14 @@
 </nav>
 
 <script>
+const CHUDS_NAME = "Chuds BBQ Bacon Cure";
 const chuds = {
-    name: "Chuds BBQ Bacon Cure",
+    name: CHUDS_NAME,
     notes: "Classic all-purpose cure.",
-    ingredients: { "Salt": 400, "Sugar": 200, "Pink Salt": 60, "Garlic": 15, "Black Pepper": 15, "Sage": 5, "Pepper Flakes": 5 }
+    ingredients: [{n:"Salt", v:400, u:"%"}, {n:"Sugar", v:200, u:"%"}, {n:"Pink Salt", v:60, u:"%"}, {n:"Garlic", v:15, u:"%"}, {n:"Black Pepper", v:15, u:"%"}, {n:"Sage", v:5, u:"%"}, {n:"Pepper Flakes", v:5, u:"%"}]
 };
 
-if (!localStorage.recipes || JSON.parse(localStorage.recipes)[0].name !== "Chuds BBQ Bacon Cure") {
+if (!localStorage.recipes) {
     localStorage.recipes = JSON.stringify([chuds]);
 }
 
@@ -141,15 +145,17 @@ function calc() {
     const mix = g * ((parseFloat(pct.value) || 0) / 100);
     const rs = JSON.parse(localStorage.recipes);
     const r = rs[profile.value || 0];
+    
     const ings = r.ingredients;
-    const totalParts = Object.values(ings).reduce((a, b) => a + b, 0);
+    const totalParts = ings.reduce((a, b) => a + b.v, 0);
 
     let h = `<div class="card" style="text-align:center; border: 1px solid var(--accent);">
                 <label style="color:var(--accent)">Total Cure Mix</label>
                 <span style="font-size:36px; font-weight:900; color:var(--accent);">${mix.toFixed(2)} g</span>
              </div><div class="card">`;
-    Object.keys(ings).forEach(k => {
-        h += `<div class="row"><span>${k}</span><b>${(mix * (ings[k] / totalParts)).toFixed(2)} g</b></div>`;
+    ings.forEach(ing => {
+        const weight = (mix * (ing.v / totalParts)).toFixed(2);
+        h += `<div class="row"><span>${ing.n}</span><b>${weight} g</b></div>`;
     });
     h += `<button class="btn-main" style="margin-top:20px;" onclick="startCure()">START ACTIVE CURE</button></div>`;
     document.getElementById('results-area').innerHTML = h;
@@ -164,35 +170,63 @@ function openAddModal() {
     document.getElementById('modal').style.display='block';
 }
 
-function copyRecipe(index) {
-    const r = JSON.parse(localStorage.recipes)[index];
-    document.getElementById('modal-title').innerText = "Copy of " + r.name;
-    document.getElementById('new-name').value = r.name + " (Copy)";
-    document.getElementById('new-notes').value = r.notes || "";
-    document.getElementById('new-ings').innerHTML = "";
-    Object.keys(r.ingredients).forEach(k => addIngRow(k, r.ingredients[k]));
-    document.getElementById('modal').style.display='block';
+function toggleUnit(btn) {
+    btn.innerText = btn.innerText === "%" ? "g" : "%";
+    btn.classList.toggle('active-unit');
 }
 
-function addIngRow(name = "", val = "") {
+function addIngRow(name = "", val = "", unit = "%") {
     const d = document.createElement('div');
-    d.style.display = 'flex'; d.style.gap = '10px'; d.style.marginBottom = '10px';
-    d.innerHTML = `<input placeholder="Ingredient" class="ing-n" value="${name}"><input type="number" placeholder="Value" class="ing-v" style="width:100px;" value="${val}">`;
+    d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px';
+    const isActive = unit === "g" ? "active-unit" : "";
+    d.innerHTML = `
+        <input placeholder="Ingredient" class="ing-n" value="${name}">
+        <input type="number" placeholder="Val" class="ing-v" style="width:80px;" value="${val}">
+        <button class="unit-toggle ${isActive}" onclick="toggleUnit(this)">${unit}</button>
+    `;
     document.getElementById('new-ings').appendChild(d);
 }
 
 function saveRecipe() {
     const name = document.getElementById('new-name').value;
     const notes = document.getElementById('new-notes').value;
-    const names = document.querySelectorAll('.ing-n'), vals = document.querySelectorAll('.ing-v');
-    let ingredients = {};
-    names.forEach((n, i) => { if(n.value && vals[i].value) ingredients[n.value] = parseFloat(vals[i].value); });
-    if(!name || Object.keys(ingredients).length === 0) return alert("Missing Info");
+    const rows = document.querySelectorAll('#new-ings > div');
+    let ingredients = [];
+    
+    rows.forEach(row => {
+        const n = row.querySelector('.ing-n').value;
+        const v = parseFloat(row.querySelector('.ing-v').value);
+        const u = row.querySelector('.unit-toggle').innerText;
+        if(n && !isNaN(v)) ingredients.push({n, v, u});
+    });
+
+    if(!name || ingredients.length === 0) return alert("Missing Info");
     const rs = JSON.parse(localStorage.recipes);
     rs.push({ name, notes, ingredients });
     localStorage.recipes = JSON.stringify(rs);
     document.getElementById('modal').style.display='none';
     refresh();
+}
+
+function copyRecipe(index) {
+    const r = JSON.parse(localStorage.recipes)[index];
+    document.getElementById('modal-title').innerText = "Copy of " + r.name;
+    document.getElementById('new-name').value = r.name + " (Copy)";
+    document.getElementById('new-notes').value = r.notes || "";
+    document.getElementById('new-ings').innerHTML = "";
+    r.ingredients.forEach(ing => addIngRow(ing.n, ing.v, ing.u));
+    document.getElementById('modal').style.display='block';
+}
+
+function deleteRecipe(index) {
+    const rs = JSON.parse(localStorage.recipes);
+    if (rs[index].name === CHUDS_NAME) return alert("Protected recipe.");
+    if (confirm(`Delete "${rs[index].name}"?`)) {
+        rs.splice(index, 1);
+        localStorage.recipes = JSON.stringify(rs);
+        refresh();
+        calc();
+    }
 }
 
 function startCure() {
@@ -224,14 +258,14 @@ function refresh() {
     const rs = JSON.parse(localStorage.recipes);
     profile.innerHTML = rs.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
     recipeList.innerHTML = rs.map((r, i) => {
-        const total = Object.values(r.ingredients).reduce((a,b)=>a+b, 0);
-        const rows = Object.keys(r.ingredients).map(k => `
-            <div class="row"><span>${k}</span><b style="color:var(--accent)">${((r.ingredients[k]/total)*100).toFixed(1)}%</b></div>
+        const total = r.ingredients.reduce((a,b)=>a+b.v, 0);
+        const rows = r.ingredients.map(ing => `
+            <div class="row"><span>${ing.n}</span><b style="color:var(--accent)">${((ing.v/total)*100).toFixed(1)}%</b></div>
         `).join("");
+        const delBtn = r.name !== CHUDS_NAME ? `<button class="btn-sub btn-del" onclick="deleteRecipe(${i})">DELETE</button>` : '';
         return `<div class="card">
-                    <button class="btn-copy" onclick="copyRecipe(${i})">COPY</button>
-                    <h3>${r.name}</h3>
-                    ${rows}
+                    <div class="card-actions"><button class="btn-sub" onclick="copyRecipe(${i})">COPY</button>${delBtn}</div>
+                    <h3>${r.name}</h3>${rows}
                 </div>`;
     }).join("");
 }
