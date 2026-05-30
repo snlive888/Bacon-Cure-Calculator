@@ -22,18 +22,15 @@
         .active { display: block; animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Stepper UI */
         .stepper { display: flex; background: var(--card-inner); border-radius: 12px; border: 1px solid #2c2c2e; overflow: hidden; margin-bottom: 12px; }
         .stepper button { width: 60px; background: #2c2c2e; border: 0; color: white; font-size: 24px; cursor: pointer; }
         .stepper input { flex: 1; border: 0; background: none; text-align: center; padding: 14px; font-size: 18px; color: white; width: 100%; }
-        input::placeholder { color: #444; }
-
+        
         input, select, textarea { 
             width: 100%; background: var(--card-inner); border: 1px solid #2c2c2e;
             border-radius: 12px; padding: 14px; color: white; font-size: 16px; margin-bottom: 10px;
         }
 
-        /* Nav & Cards */
         .nav { 
             position: fixed; bottom: 0; left: 0; right: 0; background: rgba(18,18,18,0.96);
             backdrop-filter: blur(20px); display: flex; border-top: 1px solid #2c2c2e;
@@ -45,12 +42,11 @@
 
         .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid #1c1c1e; }
         label { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 8px; }
-        .btn-main { width: 100%; background: var(--accent); color: black; border: 0; padding: 18px; border-radius: 14px; font-weight: 800; font-size: 16px; }
+        .btn-main { width: 100%; background: var(--accent); color: black; border: 0; padding: 18px; border-radius: 14px; font-weight: 800; font-size: 16px; cursor: pointer; }
         
         .row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1c1c1e; }
         .row:last-child { border:0; }
 
-        /* Modal */
         #modal { display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:2000; padding:20px; overflow-y:auto; }
     </style>
 </head>
@@ -76,7 +72,6 @@
         <select id="profile" onchange="calc()"></select>
         <label>Cure Intensity (%)</label>
         <input id="pct" type="number" value="3.0" step="0.1" oninput="calc()">
-        <button class="btn-main" onclick="startCure()">START ACTIVE CURE</button>
     </div>
     <div id="results-area"></div>
 </section>
@@ -116,14 +111,12 @@
 </nav>
 
 <script>
-// Explicitly define the Chud's BBQ Bacon Cure as the default
 const chuds = {
     name: "Chuds BBQ Bacon Cure",
     notes: "Classic all-purpose cure.",
     ingredients: { "Salt": 400, "Sugar": 200, "Pink Salt": 60, "Garlic": 15, "Black Pepper": 15, "Sage": 5, "Pepper Flakes": 5 }
 };
 
-// If no recipes or the first one isn't Chud's, reset/prepopulate
 if (!localStorage.recipes || JSON.parse(localStorage.recipes)[0].name !== "Chuds BBQ Bacon Cure") {
     localStorage.recipes = JSON.stringify([chuds]);
 }
@@ -142,20 +135,22 @@ function calc() {
     const rs = JSON.parse(localStorage.recipes);
     const r = rs[profile.value || 0];
     
-    if (g <= 0) { document.getElementById('results-area').innerHTML = ""; return; }
-
     const ings = r.ingredients;
     const totalParts = Object.values(ings).reduce((a, b) => a + b, 0);
 
     let h = `<div class="card" style="text-align:center; border: 1px solid var(--accent);">
                 <label style="color:var(--accent)">Total Cure Mix</label>
-                <span style="font-size:36px; font-weight:900; color:var(--accent);">${mix.toFixed(2)}g</span>
+                <span style="font-size:36px; font-weight:900; color:var(--accent);">${mix.toFixed(2)} g</span>
              </div><div class="card">`;
     
     Object.keys(ings).forEach(k => {
         h += `<div class="row"><span>${k}</span><b>${(mix * (ings[k] / totalParts)).toFixed(2)} g</b></div>`;
     });
-    document.getElementById('results-area').innerHTML = h + "</div>";
+
+    // Start Cure button moved inside/under the ingredient card
+    h += `<button class="btn-main" style="margin-top:20px;" onclick="startCure()">START ACTIVE CURE</button></div>`;
+    
+    document.getElementById('results-area').innerHTML = h;
 }
 
 function saveRecipe() {
@@ -164,9 +159,7 @@ function saveRecipe() {
     const names = document.querySelectorAll('.ing-n'), vals = document.querySelectorAll('.ing-v');
     let ingredients = {};
     names.forEach((n, i) => { if(n.value && vals[i].value) ingredients[n.value] = parseFloat(vals[i].value); });
-
     if(!name || Object.keys(ingredients).length === 0) return alert("Missing Info");
-
     const rs = JSON.parse(localStorage.recipes);
     rs.push({ name, notes, ingredients });
     localStorage.recipes = JSON.stringify(rs);
