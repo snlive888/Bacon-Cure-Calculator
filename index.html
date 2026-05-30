@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
     <meta name="theme-color" content="#000000">
     <link rel="manifest" href="manifest.json">
-    <title>Mark Likes BBQ</title>
+    <title>Mark Likes BBQ - Master</title>
     <style>
         :root {
             --bg: #000000; --card: #121212; --card-inner: #1c1c1e;
             --accent: #ff7a00; --text: #ffffff; --muted: #8e8e93;
-            --danger: #ff453a;
-            --safe-bottom: env(safe-area-inset-bottom);
+            --danger: #ff453a; --safe-bottom: env(safe-area-inset-bottom);
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
@@ -64,7 +63,7 @@
 <body>
 
 <section id="calc" class="page active">
-    <header><h1 style="text-align:center">Bacon Cure Recipe Calculator</h1></header>
+    <header><h1 style="text-align:center">Calculator</h1></header>
     <div class="card">
         <label>Pounds / Ounces</label>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -122,14 +121,19 @@
 
 <script>
 const CHUDS_NAME = "Chuds BBQ Bacon Cure";
-const chuds = {
+const defaultChuds = {
     name: CHUDS_NAME,
     notes: "Classic all-purpose cure.",
-    ingredients: [{n:"Salt", v:400, u:"%"}, {n:"Sugar", v:200, u:"%"}, {n:"Pink Salt", v:60, u:"%"}, {n:"Garlic", v:15, u:"%"}, {n:"Black Pepper", v:15, u:"%"}, {n:"Sage", v:5, u:"%"}, {n:"Pepper Flakes", v:5, u:"%"}]
+    ingredients: [
+        {n:"Salt", v:400, u:"%"}, {n:"Sugar", v:200, u:"%"}, {n:"Pink Salt", v:60, u:"%"}, 
+        {n:"Garlic", v:15, u:"%"}, {n:"Black Pepper", v:15, u:"%"}, {n:"Sage", v:5, u:"%"}, 
+        {n:"Pepper Flakes", v:5, u:"%"}
+    ]
 };
 
-if (!localStorage.recipes) {
-    localStorage.recipes = JSON.stringify([chuds]);
+// Initialize with modern data structure if empty or old
+if (!localStorage.recipes || !Array.isArray(JSON.parse(localStorage.recipes)[0].ingredients)) {
+    localStorage.recipes = JSON.stringify([defaultChuds]);
 }
 
 function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
@@ -142,20 +146,19 @@ function step(id, val) {
 
 function calc() {
     const g = (parseFloat(lbs.value) || 0) * 453.592 + (parseFloat(oz.value) || 0) * 28.3495;
-    const mix = g * ((parseFloat(pct.value) || 0) / 100);
+    const mixTotalG = g * ((parseFloat(pct.value) || 0) / 100);
     const rs = JSON.parse(localStorage.recipes);
     const r = rs[profile.value || 0];
     
-    const ings = r.ingredients;
-    const totalParts = ings.reduce((a, b) => a + b.v, 0);
+    const totalRatio = r.ingredients.reduce((a, b) => a + b.v, 0);
 
     let h = `<div class="card" style="text-align:center; border: 1px solid var(--accent);">
                 <label style="color:var(--accent)">Total Cure Mix</label>
-                <span style="font-size:36px; font-weight:900; color:var(--accent);">${mix.toFixed(2)} g</span>
+                <span style="font-size:36px; font-weight:900; color:var(--accent);">${mixTotalG.toFixed(2)} g</span>
              </div><div class="card">`;
-    ings.forEach(ing => {
-        const weight = (mix * (ing.v / totalParts)).toFixed(2);
-        h += `<div class="row"><span>${ing.n}</span><b>${weight} g</b></div>`;
+    r.ingredients.forEach(ing => {
+        const ingWeight = (mixTotalG * (ing.v / totalRatio)).toFixed(2);
+        h += `<div class="row"><span>${ing.n}</span><b>${ingWeight} g</b></div>`;
     });
     h += `<button class="btn-main" style="margin-top:20px;" onclick="startCure()">START ACTIVE CURE</button></div>`;
     document.getElementById('results-area').innerHTML = h;
@@ -192,14 +195,12 @@ function saveRecipe() {
     const notes = document.getElementById('new-notes').value;
     const rows = document.querySelectorAll('#new-ings > div');
     let ingredients = [];
-    
     rows.forEach(row => {
         const n = row.querySelector('.ing-n').value;
         const v = parseFloat(row.querySelector('.ing-v').value);
         const u = row.querySelector('.unit-toggle').innerText;
         if(n && !isNaN(v)) ingredients.push({n, v, u});
     });
-
     if(!name || ingredients.length === 0) return alert("Missing Info");
     const rs = JSON.parse(localStorage.recipes);
     rs.push({ name, notes, ingredients });
@@ -231,7 +232,8 @@ function deleteRecipe(index) {
 
 function startCure() {
     const d = parseInt(days.value) || 7;
-    localStorage.activeCure = JSON.stringify({ start: Date.now(), days: d, name: JSON.parse(localStorage.recipes)[profile.value].name });
+    const rs = JSON.parse(localStorage.recipes);
+    localStorage.activeCure = JSON.stringify({ start: Date.now(), days: d, name: rs[profile.value].name });
     haptic(); alert("Cure Tracked!");
 }
 
@@ -242,13 +244,13 @@ function updateDashboard() {
     }
     const data = JSON.parse(localStorage.activeCure);
     const elapsed = (Date.now() - data.start) / (1000 * 60 * 60 * 24);
-    const pct = Math.min(100, (elapsed / data.days) * 100).toFixed(1);
+    const pctVal = Math.min(100, (elapsed / data.days) * 100).toFixed(1);
     document.getElementById('active-cure-content').innerHTML = `
         <div class="card" style="border-color:var(--accent)">
             <label>${data.name}</label>
-            <div style="font-size:28px; font-weight:900;">${pct}% Complete</div>
+            <div style="font-size:28px; font-weight:900;">${pctVal}% Complete</div>
             <div style="height:10px; background:#222; border-radius:5px; margin:15px 0; overflow:hidden;">
-                <div style="height:100%; background:var(--accent); width:${pct}%"></div>
+                <div style="height:100%; background:var(--accent); width:${pctVal}%"></div>
             </div>
             <button class="btn-main" style="background:#222; color:white;" onclick="localStorage.removeItem('activeCure'); updateDashboard();">CLEAR</button>
         </div>`;
@@ -258,7 +260,7 @@ function refresh() {
     const rs = JSON.parse(localStorage.recipes);
     profile.innerHTML = rs.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
     recipeList.innerHTML = rs.map((r, i) => {
-        const total = r.ingredients.reduce((a,b)=>a+b.v, 0);
+        const total = r.ingredients.reduce((a, b) => a + b.v, 0);
         const rows = r.ingredients.map(ing => `
             <div class="row"><span>${ing.n}</span><b style="color:var(--accent)">${((ing.v/total)*100).toFixed(1)}%</b></div>
         `).join("");
