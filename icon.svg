@@ -1,1 +1,8 @@
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='#1b1b1b'/><path d='M120 160 Q256 80 392 160 L392 352 Q256 432 120 352 Z' fill='#d06a2b'/><text x='256' y='280' text-anchor='middle' font-size='48' fill='white'>MLBBQ</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<rect width="512" height="512" rx="70" fill="#111"/>
+<circle cx="256" cy="256" r="190" fill="none" stroke="#d06a2b" stroke-width="16"/>
+<path d="M256 110 C210 170 230 210 256 240 C282 210 302 170 256 110" fill="#ff7a00"/>
+<text x="256" y="290" text-anchor="middle" fill="white" font-size="70" font-weight="bold">MARK</text>
+<text x="256" y="345" text-anchor="middle" fill="#ff7a00" font-size="38">LIKES</text>
+<text x="256" y="405" text-anchor="middle" fill="white" font-size="68" font-weight="bold">BBQ</text>
+</svg>
