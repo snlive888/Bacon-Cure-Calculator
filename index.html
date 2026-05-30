@@ -96,6 +96,18 @@
     <div id="recipeList"></div>
 </section>
 
+<div id="modal">
+    <h2 id="modal-title">New Recipe</h2>
+    <input id="new-name" placeholder="Recipe Name">
+    <textarea id="new-notes" placeholder="Notes (Optional)"></textarea>
+    <div id="new-ings"></div>
+    <button onclick="addIngRow()" style="background:#222; color:white; border:0; padding:10px; border-radius:8px; width:100%; margin-top:10px;">+ Add Ingredient</button>
+    <div style="margin-top:30px; display:flex; gap:10px;">
+        <button class="btn-main" style="background:#333; color:white;" onclick="document.getElementById('modal').style.display='none'">CANCEL</button>
+        <button class="btn-main" onclick="saveRecipe()">SAVE</button>
+    </div>
+</div>
+
 <nav class="nav">
     <button class="tab on" data-p="calc"><svg viewBox="0 0 24 24"><path d="M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z M13,7h1v2h-1V7z M13,11h1v2h-1V11z M13,15h1v2h-1V15z M11,7h1v2h-1V7z M11,11h1v2h-1V11z M11,15h1v2h-1V15z M9,7h1v2H9V7z M9,11h1v2H9V11z M9,15h1v2H9V15z M7,7h1v2H7V7z M7,11h1v2H7V11z M7,15h1v2H7V15z M17,17h-2v-2h2V17z M17,13h-2v-2h2V13z M17,9h-2V7h2V9z"/></svg>Calculator</button>
     <button class="tab" data-p="dashboard"><svg viewBox="0 0 24 24"><path d="M13,3h-2v10h2V3z M17.83,5.17l-1.42,1.42C17.99,7.86,19,9.81,19,12c0,3.87-3.13,7-7,7s-7-3.13-7-7c0-2.19,1.01-4.14,2.58-5.42 L6.17,5.17C4.23,6.82,3,9.26,3,12c0,4.97,4.03,9,9,9s9-4.03,9-9C21,9.26,19.77,6.82,17.83,5.17z"/></svg>Progress</button>
@@ -103,7 +115,36 @@
 </nav>
 
 <script>
-// (Previous constants and helper functions go here)
+const CHUDS_NAME = "Chuds BBQ Bacon Cure";
+const defaultChuds = {
+    name: CHUDS_NAME,
+    notes: "Classic all-purpose cure.",
+    ingredients: [
+        {n:"Salt", v:400, u:"%"}, {n:"Sugar", v:200, u:"%"}, {n:"Pink Salt", v:60, u:"%"}, 
+        {n:"Garlic", v:15, u:"%"}, {n:"Black Pepper", v:15, u:"%"}, {n:"Sage", v:5, u:"%"}, 
+        {n:"Pepper Flakes", v:5, u:"%"}
+    ]
+};
+
+// Data migration & Initialization
+if (!localStorage.recipes) {
+    localStorage.recipes = JSON.stringify([defaultChuds]);
+} else {
+    // Check if the existing data is in the old format and migrate if necessary
+    let rs = JSON.parse(localStorage.recipes);
+    if (!Array.isArray(rs[0].ingredients)) {
+        localStorage.recipes = JSON.stringify([defaultChuds]);
+    }
+}
+
+function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
+
+function step(id, val) {
+    const el = document.getElementById(id);
+    el.value = Math.max(1, (parseInt(el.value) || 0) + val);
+    haptic();
+    calc();
+}
 
 function calc() {
     const g = (parseFloat(lbs.value) || 0) * 453.592 + (parseFloat(oz.value) || 0) * 28.3495;
@@ -111,46 +152,152 @@ function calc() {
     const rs = JSON.parse(localStorage.recipes);
     const r = rs[profile.value || 0];
     const totalRatio = r.ingredients.reduce((a, b) => a + b.v, 0);
-
-    // Get current days value so it persists during live updates
     const currentDays = document.getElementById('days')?.value || 7;
 
-    let h = `
-        <div class="card" style="text-align:center; border: 1px solid var(--accent);">
-            <label style="color:var(--accent)">Total Cure Mix</label>
-            <span style="font-size:36px; font-weight:900; color:var(--accent);">${mixTotalG.toFixed(2)} g</span>
-        </div>
-        <div class="card">`;
-    
+    let h = `<div class="card" style="text-align:center; border: 1px solid var(--accent);">
+                <label style="color:var(--accent)">Total Cure Mix</label>
+                <span style="font-size:36px; font-weight:900; color:var(--accent);">${mixTotalG.toFixed(2)} g</span>
+             </div><div class="card">`;
+             
     r.ingredients.forEach(ing => {
         const ingWeight = (mixTotalG * (ing.v / totalRatio)).toFixed(2);
         h += `<div class="row"><span>${ing.n}</span><b>${ingWeight} g</b></div>`;
     });
-
-    h += `
-        <div style="margin-top:20px;">
+    
+    h += `<div style="margin-top:20px;">
             <label>Cure Length (Days)</label>
             <div class="stepper">
                 <button onclick="step('days', -1)">−</button>
                 <input id="days" type="number" value="${currentDays}" oninput="calc()">
                 <button onclick="step('days', 1)">+</button>
             </div>
-        </div>
-        <button class="btn-main" style="margin-top:10px;" onclick="startCure()">START ACTIVE CURE</button>
-    </div>`;
-
+          </div>
+          <button class="btn-main" style="margin-top:10px;" onclick="startCure()">START ACTIVE CURE</button></div>`;
+          
     document.getElementById('results-area').innerHTML = h;
 }
 
-function step(id, val) {
-    const el = document.getElementById(id);
-    el.value = Math.max(1, (parseInt(el.value) || 0) + val);
-    haptic();
-    calc(); // Re-trigger calc to keep the UI in sync
+function openAddModal() {
+    document.getElementById('modal-title').innerText = "New Recipe";
+    document.getElementById('new-name').value = "";
+    document.getElementById('new-notes').value = "";
+    document.getElementById('new-ings').innerHTML = "";
+    addIngRow();
+    document.getElementById('modal').style.display='block';
 }
 
-// (Rest of the functions like startCure, refresh, etc. remain the same)
-refresh(); calc();
+function toggleUnit(btn) {
+    btn.innerText = btn.innerText === "%" ? "g" : "%";
+    btn.classList.toggle('active-unit');
+}
+
+function addIngRow(name = "", val = "", unit = "%") {
+    const d = document.createElement('div');
+    d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px';
+    const isActive = unit === "g" ? "active-unit" : "";
+    d.innerHTML = `
+        <input placeholder="Ingredient" class="ing-n" value="${name}">
+        <input type="number" placeholder="Val" class="ing-v" style="width:80px;" value="${val}">
+        <button class="unit-toggle ${isActive}" onclick="toggleUnit(this)">${unit}</button>
+    `;
+    document.getElementById('new-ings').appendChild(d);
+}
+
+function saveRecipe() {
+    const name = document.getElementById('new-name').value;
+    const notes = document.getElementById('new-notes').value;
+    const rows = document.querySelectorAll('#new-ings > div');
+    let ingredients = [];
+    rows.forEach(row => {
+        const n = row.querySelector('.ing-n').value;
+        const v = parseFloat(row.querySelector('.ing-v').value);
+        const u = row.querySelector('.unit-toggle').innerText;
+        if(n && !isNaN(v)) ingredients.push({n, v, u});
+    });
+    if(!name || ingredients.length === 0) return alert("Missing Info");
+    const rs = JSON.parse(localStorage.recipes);
+    rs.push({ name, notes, ingredients });
+    localStorage.recipes = JSON.stringify(rs);
+    document.getElementById('modal').style.display='none';
+    refresh();
+}
+
+function copyRecipe(index) {
+    const r = JSON.parse(localStorage.recipes)[index];
+    document.getElementById('modal-title').innerText = "Copy of " + r.name;
+    document.getElementById('new-name').value = r.name + " (Copy)";
+    document.getElementById('new-notes').value = r.notes || "";
+    document.getElementById('new-ings').innerHTML = "";
+    r.ingredients.forEach(ing => addIngRow(ing.n, ing.v, ing.u));
+    document.getElementById('modal').style.display='block';
+}
+
+function deleteRecipe(index) {
+    const rs = JSON.parse(localStorage.recipes);
+    if (rs[index].name === CHUDS_NAME) return alert("Protected recipe.");
+    if (confirm(`Delete "${rs[index].name}"?`)) {
+        rs.splice(index, 1);
+        localStorage.recipes = JSON.stringify(rs);
+        refresh();
+        calc();
+    }
+}
+
+function startCure() {
+    const d = parseInt(document.getElementById('days').value) || 7;
+    const rs = JSON.parse(localStorage.recipes);
+    localStorage.activeCure = JSON.stringify({ start: Date.now(), days: d, name: rs[profile.value].name });
+    haptic(); alert("Cure Tracked!");
+}
+
+function updateDashboard() {
+    if (!localStorage.activeCure) {
+        document.getElementById('active-cure-content').innerHTML = '<p style="text-align:center; color:var(--muted); margin-top:40px;">No active cure tracking.</p>';
+        return;
+    }
+    const data = JSON.parse(localStorage.activeCure);
+    const elapsed = (Date.now() - data.start) / (1000 * 60 * 60 * 24);
+    const pctVal = Math.min(100, (elapsed / data.days) * 100).toFixed(1);
+    document.getElementById('active-cure-content').innerHTML = `
+        <div class="card" style="border-color:var(--accent)">
+            <label>${data.name}</label>
+            <div style="font-size:28px; font-weight:900;">${pctVal}% Complete</div>
+            <div style="height:10px; background:#222; border-radius:5px; margin:15px 0; overflow:hidden;">
+                <div style="height:100%; background:var(--accent); width:${pctVal}%"></div>
+            </div>
+            <button class="btn-main" style="background:#222; color:white;" onclick="localStorage.removeItem('activeCure'); updateDashboard();">CLEAR</button>
+        </div>`;
+}
+
+function refresh() {
+    const rs = JSON.parse(localStorage.recipes);
+    profile.innerHTML = rs.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
+    recipeList.innerHTML = rs.map((r, i) => {
+        const total = r.ingredients.reduce((a, b) => a + b.v, 0);
+        const rows = r.ingredients.map(ing => `
+            <div class="row"><span>${ing.n}</span><b style="color:var(--accent)">${((ing.v/total)*100).toFixed(1)}%</b></div>
+        `).join("");
+        const delBtn = r.name !== CHUDS_NAME ? `<button class="btn-sub btn-del" onclick="deleteRecipe(${i})">DELETE</button>` : '';
+        return `<div class="card">
+                    <div class="card-actions"><button class="btn-sub" onclick="copyRecipe(${i})">COPY</button>${delBtn}</div>
+                    <h3>${r.name}</h3>${rows}
+                </div>`;
+    }).join("");
+}
+
+document.querySelectorAll(".tab").forEach(btn => {
+    btn.onclick = () => {
+        haptic();
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
+        document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+        btn.classList.add("on");
+        document.getElementById(btn.dataset.p).classList.add("active");
+        if (btn.dataset.p === 'dashboard') updateDashboard();
+        if (btn.dataset.p === 'recipes') refresh();
+    };
+});
+
+refresh(); calc(); updateDashboard();
 </script>
 </body>
 </html>
