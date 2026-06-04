@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
     <meta name="theme-color" content="#000000">
     <link rel="manifest" href="manifest.json">
-    <title>Mark Likes BBQ - Master</title>
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <title>Mark Likes BBQ - Bacon Calculator</title>
     <style>
         :root {
             --bg: #000000; --card: #121212; --card-inner: #1c1c1e;
@@ -13,68 +14,42 @@
             --danger: #ff453a; --safe-bottom: env(safe-area-inset-bottom);
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            margin: 0; background: var(--bg); color: var(--text); 
-            font-family: -apple-system, system-ui, sans-serif;
-            padding-bottom: calc(100px + var(--safe-bottom));
-        }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; padding-bottom: calc(100px + var(--safe-bottom)); }
         .page { padding: 20px; display: none; max-width: 500px; margin: 0 auto; }
         .active { display: block; animation: fadeIn 0.2s ease-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
         .stepper { display: flex; background: var(--card-inner); border-radius: 12px; border: 1px solid #2c2c2e; overflow: hidden; margin-bottom: 12px; }
         .stepper button { width: 60px; background: #2c2c2e; border: 0; color: white; font-size: 24px; cursor: pointer; }
         .stepper input { flex: 1; border: 0; background: none; text-align: center; padding: 14px; font-size: 18px; color: white; width: 100%; }
-        
-        input, select, textarea { 
-            width: 100%; background: var(--card-inner); border: 1px solid #2c2c2e;
-            border-radius: 12px; padding: 14px; color: white; font-size: 16px; margin-bottom: 10px;
-        }
-
-        .nav { 
-            position: fixed; bottom: 0; left: 0; right: 0; background: rgba(18,18,18,0.96);
-            backdrop-filter: blur(20px); display: flex; border-top: 1px solid #2c2c2e;
-            padding: 10px 0 calc(10px + var(--safe-bottom)); z-index: 1000;
-        }
+        input, select, textarea { width: 100%; background: var(--card-inner); border: 1px solid #2c2c2e; border-radius: 12px; padding: 14px; color: white; font-size: 16px; margin-bottom: 10px; }
+        .nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(18,18,18,0.96); backdrop-filter: blur(20px); display: flex; border-top: 1px solid #2c2c2e; padding: 10px 0 calc(10px + var(--safe-bottom)); z-index: 1000; }
         .nav button { flex: 1; background: none; border: 0; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; }
         .nav .on { color: var(--accent); }
         .nav svg { width: 22px; height: 22px; fill: currentColor; }
-
         .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 16px; border: 1px solid #1c1c1e; position: relative; }
         label { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 8px; }
         .btn-main { width: 100%; background: var(--accent); color: black; border: 0; padding: 18px; border-radius: 14px; font-weight: 800; font-size: 16px; cursor: pointer; }
-        
         .card-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 8px; }
         .btn-sub { background: #2c2c2e; color: var(--accent); border: 0; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
         .btn-del { color: var(--danger); }
-        
         .row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1c1c1e; }
         .row:last-child { border:0; }
-
         #modal { display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:2000; padding:20px; overflow-y:auto; }
         .unit-toggle { background: #2c2c2e; border: 0; color: var(--muted); padding: 14px 10px; border-radius: 12px; margin-bottom: 10px; font-weight: 800; cursor: pointer; min-width: 45px; }
         .unit-toggle.active-unit { color: var(--accent); background: #3a3a3c; }
-
         .instruction-card { background: #1c1c1e; border: 1px solid var(--accent); border-radius: 20px; padding: 20px; margin-bottom: 20px; }
         .instruction-card h3 { color: var(--accent); margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-        .instruction-card p { margin: 0; font-size: 15px; line-height: 1.5; color: #fff; }
     </style>
 </head>
 <body>
 
 <section id="calc" class="page active">
-    <header><h1 style="text-align:center">Calculator</h1></header>
+    <header><h1 style="text-align:center; font-size: 20px;">Bacon Cure Recipe Calculator</h1></header>
     <div class="card">
         <label>Pounds / Ounces</label>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <input id="lbs" type="number" inputmode="decimal" placeholder="Lbs" oninput="calc()">
             <input id="oz" type="number" inputmode="decimal" placeholder="Oz" oninput="calc()">
-        </div>
-        <label>Cure Length (Days)</label>
-        <div class="stepper">
-            <button onclick="step('days', -1)">−</button>
-            <input id="days" type="number" value="7" oninput="calc()">
-            <button onclick="step('days', 1)">+</button>
         </div>
     </div>
     <div class="card">
@@ -104,7 +79,6 @@
 <div id="modal">
     <h2 id="modal-title">New Recipe</h2>
     <input id="new-name" placeholder="Recipe Name">
-    <textarea id="new-notes" placeholder="Notes (Optional)"></textarea>
     <div id="new-ings"></div>
     <button onclick="addIngRow()" style="background:#222; color:white; border:0; padding:10px; border-radius:8px; width:100%; margin-top:10px;">+ Add Ingredient</button>
     <div style="margin-top:30px; display:flex; gap:10px;">
@@ -115,175 +89,53 @@
 
 <nav class="nav">
     <button class="tab on" data-p="calc"><svg viewBox="0 0 24 24"><path d="M19,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h14c1.1,0,2-0.9,2-2V5C21,3.9,20.1,3,19,3z M13,7h1v2h-1V7z M13,11h1v2h-1V11z M13,15h1v2h-1V15z M11,7h1v2h-1V7z M11,11h1v2h-1V11z M11,15h1v2h-1V15z M9,7h1v2H9V7z M9,11h1v2H9V11z M9,15h1v2H9V15z M7,7h1v2H7V7z M7,11h1v2H7V11z M7,15h1v2H7V15z M17,17h-2v-2h2V17z M17,13h-2v-2h2V13z M17,9h-2V7h2V9z"/></svg>Calculator</button>
-    <button class="tab" data-p="dashboard"><svg viewBox="0 0 24 24"><path d="M13,3h-2v10h2V3z M17.83,5.17l-1.42,1.42C17.99,7.86,19,9.81,19,12c0,3.87-3.13,7-7,7s-7-3.13-7-7c0-2.19,1.01-4.14,2.58-5.42 L6.17,5.17C4.23,6.82,3,9.26,3,12c0,4.97,4.03,9,9,9s9-4.03,9-9C21,9.26,19.77,6.82,17.83,5.17z"/></svg>Progress</button>
+    <button class="tab" data-p="dashboard"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>Progress</button>
     <button class="tab" data-p="recipes"><svg viewBox="0 0 24 24"><path d="M18,2H6C4.9,2,4,2.9,4,4v16c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V4C20,2.9,19.1,2,18,2z M13,12H7v-1h6V12z M15,9H7V8h8V9z"/></svg>Recipes</button>
 </nav>
 
 <script>
 const CHUDS_NAME = "Chuds BBQ Bacon Cure";
-const defaultChuds = {
-    name: CHUDS_NAME,
-    notes: "Classic all-purpose cure.",
-    ingredients: [
-        {n:"Salt", v:400, u:"%"}, {n:"Sugar", v:200, u:"%"}, {n:"Pink Salt", v:60, u:"%"}, 
-        {n:"Garlic", v:15, u:"%"}, {n:"Black Pepper", v:15, u:"%"}, {n:"Sage", v:5, u:"%"}, 
-        {n:"Pepper Flakes", v:5, u:"%"}
-    ]
-};
+const defaultChuds = { name: CHUDS_NAME, ingredients: [{n:"Salt", v:400, u:"%"}, {n:"Sugar", v:200, u:"%"}, {n:"Pink Salt", v:60, u:"%"}, {n:"Garlic", v:15, u:"%"}, {n:"Black Pepper", v:15, u:"%"}, {n:"Sage", v:5, u:"%"}, {n:"Pepper Flakes", v:5, u:"%"}] };
 
-// Initialize with modern data structure if empty or old
-if (!localStorage.recipes || !Array.isArray(JSON.parse(localStorage.recipes)[0].ingredients)) {
-    localStorage.recipes = JSON.stringify([defaultChuds]);
-}
+if (!localStorage.recipes) localStorage.recipes = JSON.stringify([defaultChuds]);
 
 function haptic() { if (navigator.vibrate) navigator.vibrate(10); }
-
-function step(id, val) {
-    const el = document.getElementById(id);
-    el.value = Math.max(1, (parseInt(el.value) || 0) + val);
-    haptic(); calc();
-}
+function step(id, val) { const el = document.getElementById(id); el.value = Math.max(1, (parseInt(el.value) || 0) + val); haptic(); calc(); }
 
 function calc() {
     const g = (parseFloat(lbs.value) || 0) * 453.592 + (parseFloat(oz.value) || 0) * 28.3495;
     const mixTotalG = g * ((parseFloat(pct.value) || 0) / 100);
     const rs = JSON.parse(localStorage.recipes);
     const r = rs[profile.value || 0];
-    
     const totalRatio = r.ingredients.reduce((a, b) => a + b.v, 0);
-
-    let h = `<div class="card" style="text-align:center; border: 1px solid var(--accent);">
-                <label style="color:var(--accent)">Total Cure Mix</label>
-                <span style="font-size:36px; font-weight:900; color:var(--accent);">${mixTotalG.toFixed(2)} g</span>
-             </div><div class="card">`;
-    r.ingredients.forEach(ing => {
-        const ingWeight = (mixTotalG * (ing.v / totalRatio)).toFixed(2);
-        h += `<div class="row"><span>${ing.n}</span><b>${ingWeight} g</b></div>`;
-    });
-    h += `<button class="btn-main" style="margin-top:20px;" onclick="startCure()">START ACTIVE CURE</button></div>`;
+    const currentDays = document.getElementById('days')?.value || 7;
+    let h = `<div class="card" style="text-align:center; border: 1px solid var(--accent);"><label style="color:var(--accent)">Total Cure Mix</label><span style="font-size:36px; font-weight:900; color:var(--accent);">${mixTotalG.toFixed(2)} g</span></div><div class="card">`;
+    r.ingredients.forEach(ing => { h += `<div class="row"><span>${ing.n}</span><b>${(mixTotalG * (ing.v / totalRatio)).toFixed(2)} g</b></div>`; });
+    h += `<div style="margin-top:20px;"><label>Cure Length (Days)</label><div class="stepper"><button onclick="step('days', -1)">−</button><input id="days" type="number" value="${currentDays}" oninput="calc()"><button onclick="step('days', 1)">+</button></div></div><button class="btn-main" style="margin-top:10px;" onclick="startCure()">START ACTIVE CURE</button></div>`;
     document.getElementById('results-area').innerHTML = h;
 }
 
-function openAddModal() {
-    document.getElementById('modal-title').innerText = "New Recipe";
-    document.getElementById('new-name').value = "";
-    document.getElementById('new-notes').value = "";
-    document.getElementById('new-ings').innerHTML = "";
-    addIngRow();
-    document.getElementById('modal').style.display='block';
-}
-
-function toggleUnit(btn) {
-    btn.innerText = btn.innerText === "%" ? "g" : "%";
-    btn.classList.toggle('active-unit');
-}
-
-function addIngRow(name = "", val = "", unit = "%") {
-    const d = document.createElement('div');
-    d.style.display = 'flex'; d.style.gap = '8px'; d.style.marginBottom = '10px';
-    const isActive = unit === "g" ? "active-unit" : "";
-    d.innerHTML = `
-        <input placeholder="Ingredient" class="ing-n" value="${name}">
-        <input type="number" placeholder="Val" class="ing-v" style="width:80px;" value="${val}">
-        <button class="unit-toggle ${isActive}" onclick="toggleUnit(this)">${unit}</button>
-    `;
-    document.getElementById('new-ings').appendChild(d);
-}
-
-function saveRecipe() {
-    const name = document.getElementById('new-name').value;
-    const notes = document.getElementById('new-notes').value;
-    const rows = document.querySelectorAll('#new-ings > div');
-    let ingredients = [];
-    rows.forEach(row => {
-        const n = row.querySelector('.ing-n').value;
-        const v = parseFloat(row.querySelector('.ing-v').value);
-        const u = row.querySelector('.unit-toggle').innerText;
-        if(n && !isNaN(v)) ingredients.push({n, v, u});
-    });
-    if(!name || ingredients.length === 0) return alert("Missing Info");
-    const rs = JSON.parse(localStorage.recipes);
-    rs.push({ name, notes, ingredients });
-    localStorage.recipes = JSON.stringify(rs);
-    document.getElementById('modal').style.display='none';
-    refresh();
-}
-
-function copyRecipe(index) {
-    const r = JSON.parse(localStorage.recipes)[index];
-    document.getElementById('modal-title').innerText = "Copy of " + r.name;
-    document.getElementById('new-name').value = r.name + " (Copy)";
-    document.getElementById('new-notes').value = r.notes || "";
-    document.getElementById('new-ings').innerHTML = "";
-    r.ingredients.forEach(ing => addIngRow(ing.n, ing.v, ing.u));
-    document.getElementById('modal').style.display='block';
-}
-
-function deleteRecipe(index) {
-    const rs = JSON.parse(localStorage.recipes);
-    if (rs[index].name === CHUDS_NAME) return alert("Protected recipe.");
-    if (confirm(`Delete "${rs[index].name}"?`)) {
-        rs.splice(index, 1);
-        localStorage.recipes = JSON.stringify(rs);
-        refresh();
-        calc();
-    }
-}
-
-function startCure() {
-    const d = parseInt(days.value) || 7;
-    const rs = JSON.parse(localStorage.recipes);
-    localStorage.activeCure = JSON.stringify({ start: Date.now(), days: d, name: rs[profile.value].name });
-    haptic(); alert("Cure Tracked!");
-}
+function openAddModal() { document.getElementById('modal-title').innerText = "New Recipe"; document.getElementById('new-name').value = ""; document.getElementById('new-ings').innerHTML = ""; addIngRow(); document.getElementById('modal').style.display='block'; }
+function toggleUnit(btn) { btn.innerText = btn.innerText === "%" ? "g" : "%"; btn.classList.toggle('active-unit'); }
+function addIngRow(n="", v="", u="%") { const d = document.createElement('div'); d.style.cssText = 'display:flex; gap:8px; margin-bottom:10px;'; d.innerHTML = `<input placeholder="Ingredient" class="ing-n" value="${n}"><input type="number" placeholder="Val" class="ing-v" style="width:80px;" value="${v}"><button class="unit-toggle ${u==='g'?'active-unit':''}" onclick="toggleUnit(this)">${u}</button>`; document.getElementById('new-ings').appendChild(d); }
+function saveRecipe() { const name = document.getElementById('new-name').value; const rows = document.querySelectorAll('#new-ings > div'); let ingredients = []; rows.forEach(row => { const n = row.querySelector('.ing-n').value; const v = parseFloat(row.querySelector('.ing-v').value); const u = row.querySelector('.unit-toggle').innerText; if(n && !isNaN(v)) ingredients.push({n, v, u}); }); if(!name || ingredients.length === 0) return alert("Missing Info"); const rs = JSON.parse(localStorage.recipes); rs.push({ name, ingredients }); localStorage.recipes = JSON.stringify(rs); document.getElementById('modal').style.display='none'; refresh(); }
+function copyRecipe(index) { const r = JSON.parse(localStorage.recipes)[index]; document.getElementById('modal-title').innerText = "Copy of " + r.name; document.getElementById('new-name').value = r.name + " (Copy)"; document.getElementById('new-ings').innerHTML = ""; r.ingredients.forEach(ing => addIngRow(ing.n, ing.v, ing.u)); document.getElementById('modal').style.display='block'; }
+function deleteRecipe(index) { const rs = JSON.parse(localStorage.recipes); if (rs[index].name === CHUDS_NAME) return alert("Protected."); if (confirm(`Delete?`)) { rs.splice(index, 1); localStorage.recipes = JSON.stringify(rs); refresh(); calc(); } }
+function startCure() { const d = parseInt(document.getElementById('days').value) || 7; const rs = JSON.parse(localStorage.recipes); localStorage.activeCure = JSON.stringify({ start: Date.now(), days: d, name: rs[profile.value].name }); haptic(); alert("Cure Tracked!"); }
+function confirmClear() { if (confirm("Are you sure you want to stop tracking this cure?")) { localStorage.removeItem('activeCure'); updateDashboard(); } }
 
 function updateDashboard() {
-    if (!localStorage.activeCure) {
-        document.getElementById('active-cure-content').innerHTML = '<p style="text-align:center; color:var(--muted); margin-top:40px;">No active cure tracking.</p>';
-        return;
-    }
-    const data = JSON.parse(localStorage.activeCure);
-    const elapsed = (Date.now() - data.start) / (1000 * 60 * 60 * 24);
-    const pctVal = Math.min(100, (elapsed / data.days) * 100).toFixed(1);
-    document.getElementById('active-cure-content').innerHTML = `
-        <div class="card" style="border-color:var(--accent)">
-            <label>${data.name}</label>
-            <div style="font-size:28px; font-weight:900;">${pctVal}% Complete</div>
-            <div style="height:10px; background:#222; border-radius:5px; margin:15px 0; overflow:hidden;">
-                <div style="height:100%; background:var(--accent); width:${pctVal}%"></div>
-            </div>
-            <button class="btn-main" style="background:#222; color:white;" onclick="localStorage.removeItem('activeCure'); updateDashboard();">CLEAR</button>
-        </div>`;
+    if (!localStorage.activeCure) { document.getElementById('active-cure-content').innerHTML = '<p style="text-align:center; color:var(--muted); margin-top:40px;">No active cure tracking.</p>'; return; }
+    const data = JSON.parse(localStorage.activeCure); const start = new Date(data.start); const end = new Date(data.start + (data.days * 86400000)); const elapsed = (Date.now() - data.start) / 86400000; const pct = Math.min(100, (elapsed / data.days) * 100).toFixed(1);
+    document.getElementById('active-cure-content').innerHTML = `<div class="card" style="border-color:var(--accent)"><label>${data.name}</label><div style="font-size:28px; font-weight:900;">${pct}% Complete</div><div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin:10px 0;"><span>Start: ${start.toLocaleDateString()}</span><span>End: ${end.toLocaleDateString()}</span></div><div style="height:10px; background:#222; border-radius:5px; margin-bottom:15px; overflow:hidden;"><div style="height:100%; background:var(--accent); width:${pct}%"></div></div><button class="btn-main" style="background:#222; color:white;" onclick="confirmClear()">CLEAR</button></div>`;
 }
 
 function refresh() {
-    const rs = JSON.parse(localStorage.recipes);
-    profile.innerHTML = rs.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
-    recipeList.innerHTML = rs.map((r, i) => {
-        const total = r.ingredients.reduce((a, b) => a + b.v, 0);
-        const rows = r.ingredients.map(ing => `
-            <div class="row"><span>${ing.n}</span><b style="color:var(--accent)">${((ing.v/total)*100).toFixed(1)}%</b></div>
-        `).join("");
-        const delBtn = r.name !== CHUDS_NAME ? `<button class="btn-sub btn-del" onclick="deleteRecipe(${i})">DELETE</button>` : '';
-        return `<div class="card">
-                    <div class="card-actions"><button class="btn-sub" onclick="copyRecipe(${i})">COPY</button>${delBtn}</div>
-                    <h3>${r.name}</h3>${rows}
-                </div>`;
-    }).join("");
+    const rs = JSON.parse(localStorage.recipes); profile.innerHTML = rs.map((r, i) => `<option value="${i}">${r.name}</option>`).join("");
+    recipeList.innerHTML = rs.map((r, i) => { const total = r.ingredients.reduce((a, b) => a + b.v, 0); return `<div class="card"><div class="card-actions"><button class="btn-sub" onclick="copyRecipe(${i})">COPY</button>${r.name !== CHUDS_NAME ? `<button class="btn-sub btn-del" onclick="deleteRecipe(${i})">DELETE</button>` : ''}</div><h3>${r.name}</h3>${r.ingredients.map(ing => `<div class="row"><span>${ing.n}</span><b style="color:var(--accent)">${((ing.v/total)*100).toFixed(1)}%</b></div>`).join("")}</div>`; }).join("");
 }
 
-document.querySelectorAll(".tab").forEach(btn => {
-    btn.onclick = () => {
-        haptic();
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("on"));
-        document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-        btn.classList.add("on");
-        document.getElementById(btn.dataset.p).classList.add("active");
-        if (btn.dataset.p === 'dashboard') updateDashboard();
-        if (btn.dataset.p === 'recipes') refresh();
-    };
-});
-
+document.querySelectorAll(".tab").forEach(btn => { btn.onclick = () => { haptic(); document.querySelectorAll(".tab").forEach(t => t.classList.remove("on")); document.querySelectorAll(".page").forEach(p => p.classList.remove("active")); btn.classList.add("on"); document.getElementById(btn.dataset.p).classList.add("active"); if (btn.dataset.p === 'dashboard') updateDashboard(); if (btn.dataset.p === 'recipes') refresh(); }; });
 refresh(); calc(); updateDashboard();
 </script>
 </body>

@@ -1,1 +1,22 @@
-{"name":"Mark Likes BBQ Bacon Calculator","short_name":"MLBBQ","display":"standalone","start_url":"./","theme_color":"#0f1115","background_color":"#0f1115"}
+{
+  "short_name": "Bacon Calculator",
+  "name": "Mark Likes BBQ Bacon Calculator",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#000000",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#ff7a00"
+}
